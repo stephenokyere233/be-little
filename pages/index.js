@@ -29,6 +29,7 @@ export default function Home() {
       useWebWorker: true,
     };
   };
+  // let image;
   const compress = async () => {
     const options = {
       maxSizeMB: 1,
@@ -40,6 +41,8 @@ export default function Home() {
     try {
       const compressedFile = await imageCompression(imageFile, options);
       setCompressedImageFile(compressedFile);
+      // image=compressedFile
+      // console.log(compressedFile)
       setLoading(false);
       const fileSize = compressedFile.size / 1024 / 1024;
       console.log(
@@ -51,36 +54,35 @@ export default function Home() {
       console.log(error);
     }
   };
-  const handleUpload = async () => {
-    try {
-      await uploadToServer(compressedImageFile); // write your own logic
-      router.push("/success");
-    } catch (error) {
-      console.log(error);
-    }
-  };
   const download = async () => {
-    const image = await fetch(compressedImageFile);
-    const imageBlob = await image.blob();
-    const imageUrl = URL.createObjectURL(imageBlob);
-    const parts = imageUrl.split("blob:");
-    console.log(parts[1]);
-    setDownloadUrl(parts[1]);
-    // console.log(imageUrl);
-    console.log(imageBlob);
-    console.log(image);
-    URL.revokeObjectURL(imageUrl);
+    try {
+      if (window.navigator && window.navigator.msSaveOrOpenBlob)
+        return window.navigator.msSaveOrOpenBlob(compressedImageFile);
+      const data = window.URL.createObjectURL(compressedImageFile);
+      const link = document.createElement("a");
+      link.href = data;
+      link.download = `little-${date.toISOString()}.jpg`;
+      link.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        }),
+      );
+      setTimeout(() => {
+        window.URL.revokeObjectURL(data);
+        link.remove();
+      }, 100);
+    } catch (e) {
+      console.log(e);
+    }
+
   };
   // };
   const date = new Date();
   return (
     <div className="flex h-screen flex-col ">
       <Navbar />
-      {/* <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageUpload}
-      ></input> */}
       <section className="flex flex-1 flex-col items-center justify-center gap-10 py-6 md:flex-row md:justify-between md:px-10">
         <div className="flex h-[300px] w-[350px] flex-col items-center justify-center rounded-lg border-2 bg-[#0070f31c] p-5 md:w-[400px]">
           <div
@@ -92,6 +94,7 @@ export default function Home() {
               id="upload"
               className="hidden"
               type="file"
+              accept="image/*"
               onChange={handleImageUpload}
             />
             <FaUpload />
@@ -123,14 +126,12 @@ export default function Home() {
           {loading ? (
             <p>Loading..</p>
           ) : compressedImageFile ? (
-            <a
-              href={downloadUrl}
-              download={`Image ${date.toISOString()}`}
+            <button
               className="rounded-lg border bg-purple-700 px-6 py-3 text-xl font-medium capitalize text-white"
               onClick={download}
             >
               download
-            </a>
+            </button>
           ) : (
             <button
               className={`rounded-lg  bg-purple-700 px-6 py-3 text-xl font-medium capitalize text-white ${
@@ -161,13 +162,7 @@ export default function Home() {
           )}
         </div>
       </section>
-<Footer/>
-      {/* <>
-        <input type="file" onChange={handleFileChange} />
-        {selectedFile && (
-          <img src={URL.createObjectURL(selectedFile)} alt="Selected Image" />
-        )}
-      </> */}
+      <Footer />
     </div>
   );
 }
