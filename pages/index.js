@@ -81,7 +81,7 @@ export default function Home() {
   // };
   const date = new Date();
   return (
-    <div className="flex h-screen flex-col ">
+    <div className="flex min-h-screen flex-col ">
       <Navbar />
       <section className="flex flex-1 flex-col items-center justify-center gap-10 py-6 md:flex-row md:justify-between md:px-10">
         <div className="flex h-[300px] w-[350px] flex-col items-center justify-center rounded-lg border-2 bg-[#0070f31c] p-5 md:w-[400px]">
