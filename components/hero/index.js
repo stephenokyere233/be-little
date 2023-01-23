@@ -5,7 +5,6 @@ import Loader from "../loader/Loader";
 import Upload from "../upload";
 import imageCompression from "browser-image-compression";
 
-
 const Hero = () => {
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,16 +24,19 @@ const Hero = () => {
       useWebWorker: true,
     };
     setLoading(true);
-    try {
-      const compressedFile = await imageCompression(imageFile, options);
-      setCompressedImageFile(compressedFile);
-      setLoading(false);
-      const fileSize = compressedFile.size / 1024 / 1024;
-      setFinalSize(fileSize);
-    } catch (error) {
-      setLoading(false);
-      console.log(error);
-    }
+    const start = async () => {
+      try {
+        const compressedFile = await imageCompression(imageFile, options);
+        setCompressedImageFile(compressedFile);
+        setLoading(false);
+        const fileSize = compressedFile.size / 1024 / 1024;
+        setFinalSize(fileSize);
+      } catch (error) {
+        setLoading(false);
+        console.log(error);
+      }
+    };
+    setTimeout(start, 2500);
   };
   const download = async () => {
     try {
@@ -94,58 +96,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
-
-  // const [imageFile, setImageFile] = useState(null);
-  // const [loading, setLoading] = useState(false);
-  // const [compressedImageFile, setCompressedImageFile] = useState(null);
-  // const [finalSize, setFinalSize] = useState("");
-  // const [initialSize, setInitialSize] = useState("");
-
-  // const handleImageUpload = async (event) => {
-  //   const image = event.target.files[0];
-  //   setImageFile(image);
-  //   setInitialSize(image.size / 1024 / 1024);
-  // };
-  // const compress = async () => {
-  //   const options = {
-  //     maxSizeMB: 1,
-  //     maxWidthOrHeight: 1920,
-  //     useWebWorker: true,
-  //   };
-  //   setLoading(true);
-  //   try {
-  //     const compressedFile = await imageCompression(imageFile, options);
-  //     setCompressedImageFile(compressedFile);
-  //     setLoading(false);
-  //     const fileSize = compressedFile.size / 1024 / 1024;
-  //     setFinalSize(fileSize);
-  //   } catch (error) {
-  //     setLoading(false);
-  //     console.log(error);
-  //   }
-  // };
-  // const download = async () => {
-  //   try {
-  //     if (window.navigator && window.navigator.msSaveOrOpenBlob)
-  //       return window.navigator.msSaveOrOpenBlob(compressedImageFile);
-  //     const data = window.URL.createObjectURL(compressedImageFile);
-  //     const link = document.createElement("a");
-  //     link.href = data;
-  //     link.download = `little-${date.toISOString()}.jpg`;
-  //     link.dispatchEvent(
-  //       new MouseEvent("click", {
-  //         bubbles: true,
-  //         cancelable: true,
-  //         view: window,
-  //       }),
-  //     );
-  //     setTimeout(() => {
-  //       window.URL.revokeObjectURL(data);
-  //       link.remove();
-  //     }, 100);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
-  // };
