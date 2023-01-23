@@ -4,50 +4,25 @@ import imageCompression from "browser-image-compression";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Navbar from "@/components/navbar";
+import { FaUpload } from "react-icons/fa";
+import Link from "next/link";
+import Footer from "@/components/footer";
 
 export default function Home() {
-  // const [selectedFile, setSelectedFile] = useState(null);
-
-  // const handleFileChange = (event) => {
-  //   setSelectedFile(event.target.files[0]);
-  // };
-
-  // async function handleImageUpload(event) {
-  //   const handleFileChange = (event) => {
-  //     setSelectedFile(event.target.files[0]);
-  //   };
-  //   handleFileChange();
-  //   // const imageFile = event.target.files[0];
-  //   console.log("originalFile instanceof Blob", imageFile instanceof Blob); // true
-  //   console.log(`originalFile size ${selectedFile.size / 1024 / 1024} MB`);
-
-  //   const options = {
-  //     maxSizeMB: 1,
-  //     maxWidthOrHeight: 1920,
-  //     useWebWorker: true,
-  //   };
-  //   try {
-  //     const compressedFile = await imageCompression(selectedFile, options);
-  //     console.log(
-  //       "compressedFile instanceof Blob",
-  //       compressedFile instanceof Blob,
-  //     ); // true
-  //     console.log(
-  //       `compressedFile size ${compressedFile.size / 1024 / 1024} MB`,
-  //     ); // smaller than maxSizeMB
-
-  //     await uploadToServer(compressedFile); // write your own logic
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
-  // const ImageUpload = () => {
   const [imageFile, setImageFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [compressedImageFile, setCompressedImageFile] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [size, setSize] = useState("");
+  const [initialSize, setInitialSize] = useState("");
   const router = useRouter();
 
   const handleImageUpload = async (event) => {
+    const image = event.target.files[0];
     setImageFile(event.target.files[0]);
+    console.log(event.target.files[0]);
+    setInitialSize(image.size / 1024 / 1024);
+
     const options = {
       maxSizeMB: 1,
       maxWidthOrHeight: 1920,
@@ -60,13 +35,19 @@ export default function Home() {
       maxWidthOrHeight: 1920,
       useWebWorker: true,
     };
+    console.log("compressing");
+    setLoading(true);
     try {
       const compressedFile = await imageCompression(imageFile, options);
       setCompressedImageFile(compressedFile);
+      setLoading(false);
+      const fileSize = compressedFile.size / 1024 / 1024;
       console.log(
         `compressedFile size ${compressedFile.size / 1024 / 1024} MB`,
       );
+      setSize(fileSize.toFixed(2));
     } catch (error) {
+      setLoading(false);
       console.log(error);
     }
   };
@@ -78,46 +59,109 @@ export default function Home() {
       console.log(error);
     }
   };
+  const download = async () => {
+    const image = await fetch(compressedImageFile);
+    const imageBlob = await image.blob();
+    const imageUrl = URL.createObjectURL(imageBlob);
+    const parts = imageUrl.split("blob:");
+    console.log(parts[1]);
+    setDownloadUrl(parts[1]);
+    // console.log(imageUrl);
+    console.log(imageBlob);
+    console.log(image);
+    URL.revokeObjectURL(imageUrl);
+  };
   // };
-
+  const date = new Date();
   return (
-    <div className="flex flex-col px-10">
-      <Navbar/>
+    <div className="flex h-screen flex-col ">
+      <Navbar />
       {/* <input
         type="file"
         accept="image/*"
         onChange={handleImageUpload}
       ></input> */}
-      <div>
-        <input type="file" onChange={handleImageUpload} />
-        <button onClick={handleUpload}>Upload</button>
-        <button onClick={compress}>compress</button>
-      </div>
-      <section className="flex gap-10 justify-between">
-      <div className="h-[300px] w-[400px] rounded-lg border-2 p-5">
-        {imageFile && (
-          <Image
-          src={URL.createObjectURL(imageFile)}
-            alt=""
-            width={400}
-            height={400}
-            className="h-full object-cover"
+      <section className="flex flex-1 flex-col items-center justify-center gap-10 py-6 md:flex-row md:justify-between md:px-10">
+        <div className="flex h-[300px] w-[350px] flex-col items-center justify-center rounded-lg border-2 bg-[#0070f31c] p-5 md:w-[400px]">
+          <div
+            className={`flex w-40  cursor-pointer items-center justify-center rounded-md border border-purple-700 p-4 capitalize ${
+              imageFile && "hidden"
+            }`}
+          >
+            <input
+              id="upload"
+              className="hidden"
+              type="file"
+              onChange={handleImageUpload}
             />
-            )}
-      </div>
-      <div className="h-[300px] w-[400px] rounded-lg border-2 p-5">
-        {compressedImageFile && (
-          <Image
-          src={URL.createObjectURL(compressedImageFile)}
-          alt=""
-          width={400}
-          height={400}
-          className="h-full object-cover"
-          />
+            <FaUpload />
+            <label
+              className="cursor-pointer text-xl font-medium"
+              htmlFor="upload"
+            >
+              upload
+            </label>
+          </div>
+          {imageFile && (
+            <>
+              <Image
+                src={URL.createObjectURL(imageFile)}
+                alt=""
+                width={400}
+                height={400}
+                className="h-full object-cover"
+              />
+              {/* <p>{initialSize.toFixed(2)}MB</p> */}
+              <p className="">
+                Initial Size:
+                <span className="ml-1">{initialSize.toFixed(2)}MB</span>
+              </p>
+            </>
           )}
-      </div>
-          </section>
+        </div>
+        <div className="flex w-[400px] flex-col items-center justify-center md:h-[300px]">
+          {loading ? (
+            <p>Loading..</p>
+          ) : compressedImageFile ? (
+            <a
+              href={downloadUrl}
+              download={`Image ${date.toISOString()}`}
+              className="rounded-lg border bg-purple-700 px-6 py-3 text-xl font-medium capitalize text-white"
+              onClick={download}
+            >
+              download
+            </a>
+          ) : (
+            <button
+              className={`rounded-lg  bg-purple-700 px-6 py-3 text-xl font-medium capitalize text-white ${
+                !imageFile && "hidden"
+              }`}
+              onClick={compress}
+            >
+              compress
+            </button>
+          )}
 
+          <div className="">{!imageFile && <p>Please Select an image</p>}</div>
+        </div>
+        <div className="flex h-[300px] w-[350px] flex-col items-center justify-center rounded-lg  border-2 bg-[#0070f31c] p-5 md:w-[400px]">
+          {compressedImageFile && (
+            <>
+              <Image
+                src={URL.createObjectURL(compressedImageFile)}
+                alt=""
+                width={400}
+                height={400}
+                className="h-full object-cover"
+              />
+              <p className="">
+                Compressed Size:<span className="ml-1">{size}MB</span>
+              </p>
+            </>
+          )}
+        </div>
+      </section>
+<Footer/>
       {/* <>
         <input type="file" onChange={handleFileChange} />
         {selectedFile && (
