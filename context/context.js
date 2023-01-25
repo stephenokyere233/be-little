@@ -8,8 +8,9 @@ export const AppProvider = ({ children }) => {
   const [compressedImageFile, setCompressedImageFile] = useState(null);
   const [finalSize, setFinalSize] = useState("");
   const [initialSize, setInitialSize] = useState("");
-  const [border, setBorder] = useState("");
   const [downloaded, setDownloaded] = useState(false);
+  const [border, setBorder] = useState("none");
+
 
   return (
     <AppContext.Provider

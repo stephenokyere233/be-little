@@ -1,21 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "../button";
 import Container from "../container";
 import Loader from "../loader/Loader";
 import Upload from "../upload";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
-import { FaDownload } from "react-icons/fa";
+import { AppContext } from "@/context/context";
+import { BiCloudDownload } from "react-icons/bi";
 
 const Hero = () => {
-  const [imageFile, setImageFile] = useState(null);
   const [fileSet, setFileSet] = useState([]);
   const [resultSet, setResultSet] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [compressedImageFile, setCompressedImageFile] = useState(null);
-  const [finalSize, setFinalSize] = useState("");
-  const [initialSize, setInitialSize] = useState("");
-  const [border, setBorder] = useState("");
+  const { border, setBorder } = useContext(AppContext);
   const [downloaded, setDownloaded] = useState(false);
 
   const compress = async (file) => {
@@ -25,92 +22,78 @@ const Hero = () => {
       useWebWorker: true,
     };
     setLoading(true);
-    // const start = async () => {
     try {
       const compressedFile = await imageCompression(file, options);
-      // setCompressedImageFile(compressedFile);
       const updatedList = [...resultSet, compressedFile];
+      // setTimeout(() => {
       setResultSet(updatedList);
       setLoading(false);
-      // const fileSize = compressedFile.size / 1024 / 1024;
-      // setFinalSize(fileSize);
-      // setImageFile(null);
+      // },700);
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
-    // };
-    // start();
-    // setTimeout(start, 1500);
   };
-
-  const handleImageUpload = async (event) => {
-    const image = event.target.files[0];
-
+  const multipleCompression = async (array) => {
     const options = {
       maxSizeMB: 1,
       maxWidthOrHeight: 1920,
       useWebWorker: true,
     };
-    // setTimeout(() => {
-    setLoading(true);
-    // }, 2000);
-    const updatedList = [...fileSet, image];
-    setFileSet(updatedList);
-    const compress = async () => {
+    const newResultList = [...resultSet];
+    array.map(async (file) => {
       try {
-        const compressedFile = await imageCompression(image, options);
-        const updatedResultList = [...resultSet, compressedFile];
-        // setTimeout(() => {
-        setResultSet(updatedResultList);
-        // }, 1000);
-        setLoading(false);
+        let compressedFile = await imageCompression(file, options);
+        console.log(file);
+        newResultList.push(compressedFile);
       } catch (error) {
-        setLoading(false);
         console.log(error);
       }
-    };
-    compress();
-    // setTimeout(compress, 2000);
-    // compress(image);
+      setResultSet(newResultList);
+    });
   };
 
-  console.log(fileSet);
+  const handleImageUpload = async (event) => {
+    const image = event.target.files[0];
+    const files = Array.from(event.target.files);
+
+    if (files.length > 1) {
+      setLoading(true);
+      const newList = [...fileSet];
+      files.map((file) => {
+        newList.push(file);
+      });
+      setFileSet(newList);
+      multipleCompression(newList);
+    } else {
+      const updatedList = [...fileSet, image];
+      setFileSet(updatedList);
+      setLoading(true);
+      compress(image);
+    }
+  };
+
   console.log(resultSet);
 
-  const drag = (event) => {
-    // event.preventDefault()
-    // setDragEnter(true);
-    setBorder("2px dashed blue");
-    console.log("entered");
-    // handleImageUpload();
-  };
   const onFileDrop = (event) => {
     event.preventDefault();
     console.log("dropped");
     const image = event.dataTransfer.files[0];
     const updatedList = [...fileSet, image];
     setFileSet(updatedList);
+    setBorder("none");
     compress(image);
     console.log(event.dataTransfer);
     setBorder("none");
-
-    // setDragEnter(false);
-    // const image = event.target.files[0];
-    // setImageFile(event.dataTransfer.files[0]);
-    // setInitialSize(image.size / 1024 / 1024);
   };
   const download = async (file) => {
-    console.log("starting");
-
     try {
       if (window.navigator && window.navigator.msSaveOrOpenBlob)
         return window.navigator.msSaveOrOpenBlob(file);
       const data = window.URL.createObjectURL(file);
       const link = document.createElement("a");
-      console.log("downloading");
       link.href = data;
-      link.download = `little-${date.toISOString()}.jpg`;
+      link.download = `little-${date}.jpg`;
       link.dispatchEvent(
         new MouseEvent("click", {
           bubbles: true,
@@ -120,8 +103,6 @@ const Hero = () => {
       );
       setTimeout(() => {
         window.URL.revokeObjectURL(data);
-        console.log("done");
-
         link.remove();
       }, 100);
       setDownloaded(true);
@@ -132,54 +113,7 @@ const Hero = () => {
   const date = new Date();
 
   return (
-    // <section
-    //   onDragEnter={(event) => {
-    //     event.preventDefault();
-    //     setBorder("2px dashed blue");
-    //   }}
-    //   onDrop={() => drop()}
-    //   // onDragOver={(event) => {
-    //   //   event.preventDefault();
-    //   //   setBorder("2px dashed blue");
-    //   // }}
-    //   onDragLeave={(event) => {
-    //     event.preventDefault();
-
-    //     setBorder("none");
-    //   }}
-    //   style={{ border: `${border}` }}
-    //   className={`
-    //   ${border === "2px dashed blue" && "opacity-40"}
-    //   flex flex-1 flex-col items-center justify-center gap-10 py-6 md:flex-row md:justify-between md:px-10`}
-    // >
-    //   <div className="flex h-[300px] w-[350px] flex-col items-center justify-center rounded-lg border-2 bg-[#0070f31c] p-5 md:w-[400px]">
-    //     <Upload image={imageFile} onChange={handleImageUpload} />
-    //     {imageFile && (
-    //       <Container type="initial size" size={initialSize} image={imageFile} />
-    //     )}
-    //   </div>
-    //   <div className="flex w-[400px] flex-col items-center justify-center md:h-[300px]">
-    //     {loading ? (
-    //       <Loader />
-    //     ) : compressedImageFile ? (
-    //       <Button text="download" onClick={download} image={imageFile} />
-    //     ) : (
-    //       <Button text="compress" onClick={compress} image={imageFile} />
-    //     )}
-
-    //     <div className="">{!imageFile && <p>Please Select an image</p>}</div>
-    //   </div>
-    //   <div className="flex h-[300px] w-[350px] flex-col items-center justify-center rounded-lg  border-2 bg-[#0070f31c] p-5 md:w-[400px]">
-    //     {compressedImageFile && (
-    //       <Container
-    //         type="compressed size"
-    //         size={finalSize}
-    //         image={compressedImageFile}
-    //       />
-    //     )}
-    //   </div>
-    // </section>
-    <div className="flex flex-1 flex-col overflow-y-scroll">
+    <div className="flex flex-1 flex-col overflow-y-scroll dark:bg-darkBody">
       <div className="m-2 mx-auto flex h-40 w-[20em] items-center justify-center rounded-lg px-4 lg:w-[30em]">
         <Upload onDrop={onFileDrop} onChange={handleImageUpload} />
       </div>
@@ -196,7 +130,7 @@ const Hero = () => {
               return (
                 <div
                   key={index}
-                  className="col-span-2 flex h-16 w-full items-center justify-start gap-2 rounded-md bg-[#0070f31c] p-2"
+                  className="col-span-2 flex h-16 w-full items-center justify-start gap-2 rounded-md bg-[#0070f31c] p-2 dark:bg-dim dark:text-gray-400"
                 >
                   <Image
                     src={URL.createObjectURL(file)}
@@ -217,34 +151,30 @@ const Hero = () => {
               );
             })}
             <div className="absolute right-0 col-start-2 col-end-2 flex w-[50%] flex-col items-center gap-2">
+              {/* {resultSet ===null&& <div>Loading..................</div>} */}
               {resultSet.map((file, index) => {
                 const fileSize = (file?.size / 1024 / 1024).toFixed(2);
 
                 return (
                   <section
                     key={index}
-                    className="flex h-16 items-center gap-2 md:gap-4"
+                    className="flex h-16 items-center gap-2 dark:text-gray-400 md:gap-4"
                   >
                     {!file ? <p>Loading.....</p> : <p>done</p>}
                     <p>{file && `${fileSize}MB`}</p>
                     <button
-                      className="border"
+                      className="rounded-md bg-purple-700 px-4 py-1 text-white"
                       onClick={() => {
                         download(file);
                       }}
                     >
-                      {/* download */}
-                      <FaDownload />
+                      <BiCloudDownload size={24} />
                     </button>
                   </section>
                 );
               })}
             </div>
           </div>
-          {/* </div> */}
-          {/* );
-          })
-        } */}
         </div>
       </section>
     </div>
