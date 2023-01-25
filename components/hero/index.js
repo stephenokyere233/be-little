@@ -85,15 +85,20 @@ const Hero = () => {
     console.log("entered");
     // handleImageUpload();
   };
-  const drop = (event) => {
+  const onFileDrop = (event) => {
     event.preventDefault();
     console.log("dropped");
+    const image = event.dataTransfer.files[0];
+    const updatedList = [...fileSet, image];
+    setFileSet(updatedList);
+    compress(image);
+    console.log(event.dataTransfer);
     setBorder("none");
 
     // setDragEnter(false);
-    const image = event.target.files[0];
-    setImageFile(event.dataTransfer.files[0]);
-    setInitialSize(image.size / 1024 / 1024);
+    // const image = event.target.files[0];
+    // setImageFile(event.dataTransfer.files[0]);
+    // setInitialSize(image.size / 1024 / 1024);
   };
   const download = async (file) => {
     console.log("starting");
@@ -176,13 +181,7 @@ const Hero = () => {
     // </section>
     <div className="flex flex-1 flex-col overflow-y-scroll">
       <div className="m-2 mx-auto flex h-40 w-[20em] items-center justify-center rounded-lg px-4 lg:w-[30em]">
-        <Upload
-          onDrop={(event) => {
-            // event.preventDefault()
-            // handleImageUpload(event)
-          }}
-          onChange={handleImageUpload}
-        />
+        <Upload onDrop={onFileDrop} onChange={handleImageUpload} />
       </div>
       <section className="relative mx-auto w-full flex-1 rounded-md md:px-[3em] lg:w-[70%]">
         {fileSet.length <= 0 && (
