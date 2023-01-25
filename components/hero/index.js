@@ -65,6 +65,8 @@ const Hero = () => {
       });
       setFileSet(newList);
       multipleCompression(newList);
+    } else if (files.length <= 0) {
+      return;
     } else {
       const updatedList = [...fileSet, image];
       setFileSet(updatedList);
