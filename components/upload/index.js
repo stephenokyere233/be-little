@@ -1,11 +1,40 @@
 import { FaUpload } from "react-icons/fa";
+import { BiCloudUpload } from "react-icons/bi";
 
-const Upload = ({ image, onChange }) => {
+const Upload = ({
+  image,
+  onChange,
+  onDrop,
+  onDragEnter,
+  onDragLeave,
+  onDragOver,
+}) => {
+  // ${
+  //   image && "hidden"
+  // }
   return (
     <div
-      className={`flex w-40  cursor-pointer items-center justify-center rounded-md border border-purple-700 p-4 capitalize ${
-        image && "hidden"
-      }`}
+      onDragEnter={(event) => {
+        event.preventDefault();
+        console.log("drag enter");
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault();
+        console.log("drag left");
+      }}
+      onDragOver={(event) => {
+        event.preventDefault();
+        console.log("drag entering..");
+      }}
+      onDrop={
+        //   (event) => {
+        //   event.preventDefault();
+        //   console.log("file droppped here");
+        // }
+        onDrop
+      }
+      className={`flex h-full w-full cursor-pointer  items-center justify-center rounded-md bg-[#0070f31c] capitalize 
+      `}
     >
       <input
         id="upload"
@@ -13,10 +42,16 @@ const Upload = ({ image, onChange }) => {
         type="file"
         accept="image/*"
         onChange={onChange}
+        multiple
       />
-      <FaUpload />
-      <label className="cursor-pointer text-xl font-medium" htmlFor="upload">
-        upload
+      <label
+        className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 p-4 text-xl font-medium"
+        htmlFor="upload"
+      >
+        <div className="flex">
+          <BiCloudUpload size={100} color={"blueviolet"} />
+        </div>
+        <div>upload or drop images here</div>
       </label>
     </div>
   );
