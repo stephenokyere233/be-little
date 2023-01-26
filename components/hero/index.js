@@ -184,14 +184,12 @@ const Hero = () => {
                     {<p className="flex pl-2">done</p>}
                     <div className="flex items-center gap-2">
                       <p>{file && `${fileSize}MB`}</p>
-                      <button
-                        className="rounded-md bg-purple-700 px-4 py-1 text-white"
-                        onClick={() => {
+                      <Button
+                        action={() => {
                           download(file);
                         }}
-                      >
-                        <BiCloudDownload size={24} />
-                      </button>
+                        icon={<BiCloudDownload size={24} />}
+                      />
                     </div>
                   </section>
                 );
