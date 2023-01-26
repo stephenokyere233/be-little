@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "../button";
-import Container from "../container";
 import Loader from "../loader/Loader";
 import Upload from "../upload";
 import imageCompression from "browser-image-compression";
@@ -50,6 +49,7 @@ const Hero = () => {
         console.log(error);
       }
       setResultSet(newResultList);
+      console.log(newResultList);
     });
   };
 
@@ -79,13 +79,32 @@ const Hero = () => {
 
   const onFileDrop = (event) => {
     event.preventDefault();
-    console.log("dropped");
-    const image = event.dataTransfer.files[0];
-    const updatedList = [...fileSet, image];
-    setFileSet(updatedList);
-    setBorder("none");
-    compress(image);
-    console.log(event.dataTransfer);
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+    const files = Array.from(event.dataTransfer.files);
+    const newResults = [...resultSet];
+    const newList = [...fileSet];
+    if (files.length > 1) {
+      console.log("more than a file");
+      // setLoading(true);
+      // files.forEach(async (file) => {
+      //   newList.push(file);
+      //   const result = await imageCompression(file, options);
+      //   newResults.push(result);
+      // });
+      // setResultSet(newResults);
+      // setFileSet(newList);
+      // console.log(newResults);
+      // multipleCompression(fileSet)
+    } else {
+      const image = event.dataTransfer.files[0];
+      const updatedList = [...fileSet, image];
+      setFileSet(updatedList);
+      compress(image);
+    }
     setBorder("none");
   };
   const download = async (file) => {
@@ -144,7 +163,7 @@ const Hero = () => {
                   <p
                     className={`${
                       file?.name.length > 8 && "truncate"
-                    } w-[70px] sm:w-[100px] md:w-[200px]`}
+                    } w-[60px] sm:w-[100px] md:w-[200px]`}
                   >
                     {file?.name}
                   </p>
@@ -152,26 +171,28 @@ const Hero = () => {
                 </div>
               );
             })}
+
             <div className="absolute right-0 col-start-2 col-end-2 flex w-[50%] flex-col items-center gap-2">
-              {/* {resultSet ===null&& <div>Loading..................</div>} */}
               {resultSet.map((file, index) => {
                 const fileSize = (file?.size / 1024 / 1024).toFixed(2);
 
                 return (
                   <section
                     key={index}
-                    className="flex h-16 items-center gap-2 dark:text-gray-400 md:gap-4"
+                    className="flex h-16 w-full items-center justify-between gap-2 pr-2 dark:text-gray-400 md:gap-4 md:pr-4"
                   >
-                    {!file ? <p>Loading.....</p> : <p>done</p>}
-                    <p>{file && `${fileSize}MB`}</p>
-                    <button
-                      className="rounded-md bg-purple-700 px-4 py-1 text-white"
-                      onClick={() => {
-                        download(file);
-                      }}
-                    >
-                      <BiCloudDownload size={24} />
-                    </button>
+                    {<p className="flex pl-2">done</p>}
+                    <div className="flex items-center gap-2">
+                      <p>{file && `${fileSize}MB`}</p>
+                      <button
+                        className="rounded-md bg-purple-700 px-4 py-1 text-white"
+                        onClick={() => {
+                          download(file);
+                        }}
+                      >
+                        <BiCloudDownload size={24} />
+                      </button>
+                    </div>
                   </section>
                 );
               })}

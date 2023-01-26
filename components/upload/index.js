@@ -1,33 +1,26 @@
-import { FaUpload } from "react-icons/fa";
 import { BiCloudUpload } from "react-icons/bi";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { AppContext } from "@/context/context";
 
 const Upload = ({ image, onChange, onDrop }) => {
-  const {border, setBorder} = useContext(AppContext)
+  const { border, setBorder } = useContext(AppContext);
   return (
     <div
       onDragEnter={(event) => {
         event.preventDefault();
-        console.log("drag enter");
-        setBorder("3px dashed blueviolet");
+        setBorder(styles.activeBorder);
       }}
       onDragLeave={(event) => {
         event.preventDefault();
-        console.log("drag left");
         setBorder("none");
-
       }}
       onDragOver={(event) => {
         event.preventDefault();
-        console.log("drag entering..");
-        setBorder("3px dashed blueviolet");
-
+        setBorder(styles.activeBorder);
       }}
       onDrop={onDrop}
       style={{ border: border }}
-      className={`flex h-full dark:bg-dim w-full ${border!=="none"&& "opacity-60"} cursor-pointer  items-center justify-center dark:bg-dim dark:text-slate-400 rounded-md bg-[#0070f31c] capitalize 
-      `}
+      className={`${border !== "none" && "opacity-60"} ${styles.wrapper}`}
     >
       <input
         id="upload"
@@ -35,19 +28,21 @@ const Upload = ({ image, onChange, onDrop }) => {
         type="file"
         accept="image/*"
         onChange={onChange}
-        multiple
+        // multiple
       />
-      <label
-        className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 p-4 text-xl font-medium"
-        htmlFor="upload"
-      >
-        <div className="flex">
-          <BiCloudUpload size={100} color={"blueviolet"} />
-        </div>
-        <div className="text-lg">upload or drop images here</div>
+      <label className={styles.label} htmlFor="upload">
+        <BiCloudUpload size={100} color={"#8A2BE2"} />
+        <p className="text-lg">upload or drop images here</p>
       </label>
     </div>
   );
+};
+const styles = {
+  activeBorder: "3px dashed #8A2BE2",
+  wrapper:
+    "flex h-full w-full dark:bg-dim cursor-pointer  items-center justify-center rounded-md bg-[#0070f31c] capitalize dark:bg-dim dark:text-slate-400",
+  label:
+    "flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 p-4 text-xl font-medium",
 };
 
 export default Upload;
