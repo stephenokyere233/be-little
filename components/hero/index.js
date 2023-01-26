@@ -6,13 +6,16 @@ import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { AppContext } from "@/context/context";
 import { BiCloudDownload } from "react-icons/bi";
+import toast, { Toaster } from "react-hot-toast";
+import useDownload from "@/hooks/useDownload";
+import Null from "../null";
 
 const Hero = () => {
   const [fileSet, setFileSet] = useState([]);
   const [resultSet, setResultSet] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { border, setBorder } = useContext(AppContext);
-  const [downloaded, setDownloaded] = useState(false);
+  const { border, setBorder, isImage, setIsImage } = useContext(AppContext);
+  const { download, downloaded } = useDownload();
 
   const compress = async (file) => {
     const options = {
@@ -24,15 +27,23 @@ const Hero = () => {
     try {
       const compressedFile = await imageCompression(file, options);
       const updatedList = [...resultSet, compressedFile];
-      // setTimeout(() => {
-      setResultSet(updatedList);
-      setLoading(false);
-      // },700);
+      setTimeout(() => {
+        setResultSet(updatedList);
+        setLoading(false);
+      }, 700);
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
   };
+  const checkIsImage = (file) => {
+    if (!file) {
+      return false;
+    }
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    return allowedTypes.includes(file.type);
+  };
+
   const multipleCompression = async (array) => {
     const options = {
       maxSizeMB: 1,
@@ -52,98 +63,64 @@ const Hero = () => {
       console.log(newResultList);
     });
   };
+  const error = () => {
+    toast.error("File format unsupported");
+  };
 
   const handleImageUpload = async (event) => {
     const image = event.target.files[0];
     const files = Array.from(event.target.files);
-
     if (files.length > 1) {
       setLoading(true);
       const newList = [...fileSet];
       files.map((file) => {
-        newList.push(file);
+        if (checkIsImage(file)) {
+          newList.push(file);
+        }
       });
       setFileSet(newList);
       multipleCompression(newList);
-    } else if (files.length <= 0) {
+    } else {
+      if (checkIsImage(image)) {
+        const updatedList = [...fileSet, image];
+        setFileSet(updatedList);
+        setLoading(true);
+        compress(image);
+      } else {
+        error();
+        setIsImage(false);
+        return;
+      }
+    }
+  };
+
+  const onFileDrop = (event) => {
+    event.preventDefault();
+    const image = event.dataTransfer.files[0];
+    if (!checkIsImage(image)) {
+      setIsImage(false);
+      setBorder("none");
+      error();
       return;
     } else {
       const updatedList = [...fileSet, image];
       setFileSet(updatedList);
-      setLoading(true);
       compress(image);
-    }
-  };
-
-  console.log(resultSet);
-
-  const onFileDrop = (event) => {
-    event.preventDefault();
-    const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1920,
-      useWebWorker: true,
-    };
-    const files = Array.from(event.dataTransfer.files);
-    const newResults = [...resultSet];
-    const newList = [...fileSet];
-    if (files.length > 1) {
-      console.log("more than a file");
-      // setLoading(true);
-      // files.forEach(async (file) => {
-      //   newList.push(file);
-      //   const result = await imageCompression(file, options);
-      //   newResults.push(result);
-      // });
-      // setResultSet(newResults);
-      // setFileSet(newList);
-      // console.log(newResults);
-      // multipleCompression(fileSet)
-    } else {
-      const image = event.dataTransfer.files[0];
-      const updatedList = [...fileSet, image];
-      setFileSet(updatedList);
-      compress(image);
+      console.log(image);
     }
     setBorder("none");
   };
-  const download = async (file) => {
-    try {
-      if (window.navigator && window.navigator.msSaveOrOpenBlob)
-        return window.navigator.msSaveOrOpenBlob(file);
-      const data = window.URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = data;
-      link.download = `little-${date}.jpg`;
-      link.dispatchEvent(
-        new MouseEvent("click", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        }),
-      );
-      setTimeout(() => {
-        window.URL.revokeObjectURL(data);
-        link.remove();
-      }, 100);
-      setDownloaded(true);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  const date = new Date();
 
   return (
-    <div className="flex flex-1 flex-col overflow-y-scroll dark:bg-darkBody">
+    <div
+      className={`relative flex  flex-1 flex-col overflow-y-scroll dark:bg-darkBody`}
+    >
+      <Toaster />
       <div className="m-2 mx-auto flex h-40 w-[20em] items-center justify-center rounded-lg px-4 lg:w-[30em]">
         <Upload onDrop={onFileDrop} onChange={handleImageUpload} />
       </div>
       <section className="relative mx-auto w-full flex-1 rounded-md md:px-[3em] lg:w-[70%]">
-        {fileSet.length <= 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-gray-500">
-            No file Selected
-          </div>
-        )}
+        {fileSet.length <= 0 && <Null />}
         <div className="relative m-2 flex flex-col">
           <div className="grid grid-cols-2 gap-2">
             {fileSet.map((file, index) => {
@@ -155,7 +132,7 @@ const Hero = () => {
                 >
                   <Image
                     src={URL.createObjectURL(file)}
-                    alt=""
+                    alt={file?.name}
                     width={100}
                     height={100}
                     className="h-12 w-10 rounded-md object-cover md:w-16"
