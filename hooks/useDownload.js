@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const useDownload = () => {
   const [downloaded, setDownloaded] = useState(false);
-  const date = new Date();
+  const date = Date.now();
 
   const download = async (file) => {
     try {
