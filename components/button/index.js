@@ -1,7 +1,7 @@
 const Button = ({ text, action, icon }) => {
   return (
     <button
-      className={`rounded-lg  bg-purple-700 px-6 py-3 text-xl font-medium capitalize text-white
+      className={`rounded-lg  bg-purple-700 px-6 py-3 text-white
     `}
       onClick={action}
     >
