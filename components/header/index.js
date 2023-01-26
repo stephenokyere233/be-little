@@ -8,11 +8,11 @@ const Header = () => {
     setTheme(theme === "light" ? "dark" : "light");
   };
   return (
-    <div className="flex h-20 items-center justify-between bg-light px-10 dark:bg-dim dark:text-white">
-      <h1 className="text-[1.6em] dark:text-grey font-bold md:text-4xl">
-        be<span className="text-purple-600">Little</span>
+    <div className={styles.header}>
+      <h1 className={styles.logo}>
+        be<span className="text-brand">Little</span>
       </h1>
-      <div className="flex items-center gap-4">
+      <div className={styles.section}>
         {theme === "light" ? (
           <BiMoon size={25} onClick={changeTheme} className="text-slate-600" />
         ) : (
@@ -28,6 +28,12 @@ const Header = () => {
       </div>
     </div>
   );
+};
+const styles = {
+  header:
+    "flex h-20 items-center justify-between bg-light px-10 dark:bg-dim dark:text-white",
+  logo: "text-[1.6em] dark:text-grey font-bold md:text-4xl",
+  section: "flex items-center gap-4",
 };
 
 export default Header;
