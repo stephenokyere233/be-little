@@ -27,15 +27,34 @@ const Hero = () => {
     try {
       const compressedFile = await imageCompression(file, options);
       const updatedList = [...resultSet, compressedFile];
-      setTimeout(() => {
-        setResultSet(updatedList);
-        setLoading(false);
-      }, 700);
+      // setTimeout(() => {
+      setResultSet(updatedList);
+      setLoading(false);
+      // }, 700);
+      console.log(compressedFile);
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
   };
+
+  const multiCompress = async (file) => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+    setLoading(true);
+    // try {
+      const compressedFile = await imageCompression(file, options);
+      console.log(compressedFile);
+      return compressedFile;
+    // } catch (error) {
+    //   setLoading(false);
+    //   console.log(error);
+    // }
+  };
+
   const checkIsImage = (file) => {
     if (!file) {
       return false;
@@ -44,25 +63,25 @@ const Hero = () => {
     return allowedTypes.includes(file.type);
   };
 
-  const multipleCompression = async (array) => {
-    const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1920,
-      useWebWorker: true,
-    };
-    const newResultList = [...resultSet];
-    array.map(async (file) => {
-      try {
-        let compressedFile = await imageCompression(file, options);
-        console.log(file);
-        newResultList.push(compressedFile);
-      } catch (error) {
-        console.log(error);
-      }
-      setResultSet(newResultList);
-      console.log(newResultList);
-    });
-  };
+  // const multipleCompression = async (array) => {
+  //   const options = {
+  //     maxSizeMB: 1,
+  //     maxWidthOrHeight: 1920,
+  //     useWebWorker: true,
+  //   };
+  //   const newResultList = [...resultSet];
+  //   array.map(async (file) => {
+  //     try {
+  //       let compressedFile = await imageCompression(file, options);
+  //       console.log(file);
+  //       newResultList.push(compressedFile);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //     setResultSet(newResultList);
+  //     console.log(newResultList);
+  //   });
+  // };
   const error = () => {
     toast.error("File format unsupported");
   };
@@ -73,13 +92,26 @@ const Hero = () => {
     if (files.length > 1) {
       setLoading(true);
       const newList = [...fileSet];
-      files.map((file) => {
+      const newResult = [...resultSet];
+      files.forEach(async (file) => {
         if (checkIsImage(file)) {
           newList.push(file);
+          console.log(file);
+          // const compressedFile = await compress(file);
+          // newResult=[...resultSet,compressedFile]
+          // await newResult.push(
+          await multiCompress(file).then((res) => {
+            console.log(res);
+            newResult.push(res);
+          });
+     
+          // );
+          // console.log(compressedFile);
         }
       });
+      await setResultSet(newResult);
       setFileSet(newList);
-      multipleCompression(newList);
+      // multipleCompression(newList);
     } else {
       if (checkIsImage(image)) {
         const updatedList = [...fileSet, image];
@@ -93,6 +125,8 @@ const Hero = () => {
       }
     }
   };
+  console.log(resultSet);
+  console.log(fileSet);
 
   const onFileDrop = (event) => {
     event.preventDefault();
