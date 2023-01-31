@@ -100,7 +100,7 @@ const Hero = () => {
           // const compressedFile = await compress(file);
           // newResult=[...resultSet,compressedFile]
           // await newResult.push(
-          await multiCompress(file).then((res) => {
+        await multiCompress(file).then((res) => {
             console.log(res);
             newResult.push(res);
           });
@@ -109,7 +109,7 @@ const Hero = () => {
           // console.log(compressedFile);
         }
       });
-      await setResultSet(newResult);
+      setResultSet(newResult);
       setFileSet(newList);
       // multipleCompression(newList);
     } else {

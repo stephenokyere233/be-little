@@ -28,7 +28,7 @@ const Upload = ({ image, onChange, onDrop }) => {
         type="file"
         accept="image/*"
         onChange={onChange}
-        multiple
+        // multiple
       />
       <label className={styles.label} htmlFor="upload">
         <BiCloudUpload size={100} color={"#8A2BE2"} />
