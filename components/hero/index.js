@@ -59,7 +59,7 @@ const Hero = () => {
     if (!file) {
       return false;
     }
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     return allowedTypes.includes(file.type);
   };
 
