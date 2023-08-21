@@ -14,6 +14,7 @@ const Hero = () => {
   const [fileSet, setFileSet] = useState([]);
   const [resultSet, setResultSet] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [imageUploaded, setImagesUploaded] = useState(false);
   const { border, setBorder, isImage, setIsImage } = useContext(AppContext);
   const { download, downloaded } = useDownload();
 
@@ -27,15 +28,24 @@ const Hero = () => {
     try {
       const compressedFile = await imageCompression(file, options);
       const updatedList = [...resultSet, compressedFile];
-      // setTimeout(() => {
       setResultSet(updatedList);
       setLoading(false);
-      // }, 700);
-      console.log(compressedFile);
     } catch (error) {
       setLoading(false);
       console.log(error);
     }
+  };
+
+  const compressFile = async (file) => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+    setLoading(true);
+
+    const compressedFile = await imageCompression(file, options);
+    return compressedFile;
   };
 
   const multiCompress = async (file) => {
@@ -46,9 +56,9 @@ const Hero = () => {
     };
     setLoading(true);
     // try {
-      const compressedFile = await imageCompression(file, options);
-      console.log(compressedFile);
-      return compressedFile;
+    const compressedFile = await imageCompression(file, options);
+    // console.log(compressedFile);
+    return compressedFile;
     // } catch (error) {
     //   setLoading(false);
     //   console.log(error);
@@ -59,29 +69,17 @@ const Hero = () => {
     if (!file) {
       return false;
     }
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
     return allowedTypes.includes(file.type);
   };
 
-  // const multipleCompression = async (array) => {
-  //   const options = {
-  //     maxSizeMB: 1,
-  //     maxWidthOrHeight: 1920,
-  //     useWebWorker: true,
-  //   };
-  //   const newResultList = [...resultSet];
-  //   array.map(async (file) => {
-  //     try {
-  //       let compressedFile = await imageCompression(file, options);
-  //       console.log(file);
-  //       newResultList.push(compressedFile);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //     setResultSet(newResultList);
-  //     console.log(newResultList);
-  //   });
-  // };
+ 
   const error = () => {
     toast.error("File format unsupported");
   };
@@ -92,26 +90,18 @@ const Hero = () => {
     if (files.length > 1) {
       setLoading(true);
       const newList = [...fileSet];
-      const newResult = [...resultSet];
       files.forEach(async (file) => {
         if (checkIsImage(file)) {
           newList.push(file);
+          setImagesUploaded(true);
           console.log(file);
-          // const compressedFile = await compress(file);
-          // newResult=[...resultSet,compressedFile]
-          // await newResult.push(
-        await multiCompress(file).then((res) => {
-            console.log(res);
-            newResult.push(res);
+          compressFile(file).then((res) => {
+            setResultSet((prev) => [...prev, res]);
           });
-     
-          // );
-          // console.log(compressedFile);
         }
       });
-      setResultSet(newResult);
+      setLoading(false)
       setFileSet(newList);
-      // multipleCompression(newList);
     } else {
       if (checkIsImage(image)) {
         const updatedList = [...fileSet, image];
@@ -125,22 +115,22 @@ const Hero = () => {
       }
     }
   };
-  console.log(resultSet);
-  console.log(fileSet);
 
   const onFileDrop = (event) => {
     event.preventDefault();
+    console.log(event);
     const image = event.dataTransfer.files[0];
-    if (!checkIsImage(image)) {
-      setIsImage(false);
-      setBorder("none");
-      error();
-      return;
-    } else {
+    console.log(image);
+    if (checkIsImage(image)) {
       const updatedList = [...fileSet, image];
       setFileSet(updatedList);
       compress(image);
       console.log(image);
+    } else {
+      setIsImage(false);
+      setBorder("none");
+      error();
+      return;
     }
     setBorder("none");
   };
