@@ -75,11 +75,12 @@ const Hero = () => {
       "image/png",
       "image/webp",
       "image/gif",
+      "image/svg+xml",
+      "image/svg",
     ];
     return allowedTypes.includes(file.type);
   };
 
- 
   const error = () => {
     toast.error("File format unsupported");
   };
@@ -100,7 +101,7 @@ const Hero = () => {
           });
         }
       });
-      setLoading(false)
+      setLoading(false);
       setFileSet(newList);
     } else {
       if (checkIsImage(image)) {
