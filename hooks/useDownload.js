@@ -11,7 +11,7 @@ const useDownload = () => {
       const data = window.URL.createObjectURL(file);
       const link = document.createElement("a");
       link.href = data;
-      const fileType = file.name.split(".")[file.name.split(".").length - 1];
+      const fileType = file.type.split("/")[1];
       link.download = `little-${date}.${fileType}`;
       link.dispatchEvent(
         new MouseEvent("click", {
